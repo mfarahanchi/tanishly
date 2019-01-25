@@ -127,6 +127,11 @@ def join_second(party):
         abort(401)
     return render_template('chat2.html', peer=party)
 
+
+@app.route('/p2p')
+def p2p():
+    return render_template('indexp2p.html')
+
 @socketio.on('join')
 def on_join(data):
     username = session['username']
