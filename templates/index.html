@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Flask-SSE Quickstart</title>
+</head>
+<body>
+  <h1>Flask-SSE Quickstart</h1>
+  <a href="/login">Login</a>
+  <h2>You've logged in as: {{session.username}}</h2>
+  <p id="result"></p>
+  <h1>Contacts</h1>
+  <h6>Please enter freind name</h6>
+  <br>
+  <form action="/contact" method="post">
+    <input type="text" class="username" placeholder="Username" name="username" value="{{
+      request.form.username }}">
+    <input class="btn btn-default" type="submit" value="send request">
+  </form>
+  <h6>list of your contacts:</h6>
+  <p>
+      <ol>
+          {% for contact in contacts %}
+          <li><a href="/chat/invite/{{contact}}">{{contact}}</a></li>
+          {% endfor %}
+      </ol>
+  </p>
+  <script>
+    var source = new EventSource("{{ url_for('sse.stream') }}");
+    source.addEventListener('greeting', function(event) {
+        var data = JSON.parse(event.data);
+        // alert("The server says " + data.message);
+        document.getElementById("result").innerHTML += data.message + "<br>";
+    }, false);
+    source.addEventListener('new_user', function(event) {
+        var data = JSON.parse(event.data);
+        // alert("new user : " + data.message);
+        document.getElementById("result").innerHTML += data.message + "<br>";
+    }, false);
+    source.addEventListener('new_contact', function(event) {
+        var data = JSON.parse(event.data);
+        // alert(data.message);
+        document.getElementById("result").innerHTML += data.    message + "<br>";
+    }, false);
+    source.addEventListener('error', function(event) {
+        // var data = JSON.parse(event.data);
+        // alert("log : " + event);
+        document.getElementById("result").innerHTML += data.message + "<br>";
+    }, false);
+  </script>
+    <script>
+    var source_uniq = new EventSource("{{ url_for('sse.stream', channel=session['username'] ) }}") ;
+    source_uniq.addEventListener('new_contact', function(event) {
+        var data = JSON.parse(event.data);
+        // alert(data);
+        if(confirm(data.message+" requests to add you in his contacts, are you ok?")) {
+            var xhr = new XMLHttpRequest(); 
+            xhr.open('GET','/contact/approve/'+data.message); 
+            xhr.onload = function() { console.log("xhr sent"); }; 
+            xhr.send();
+        }
+    },false);
+    source_uniq.addEventListener('added_contact', function(event) {
+        var msg = JSON.parse(event.data)
+        $( 'ol' ).append( '<li><a href="/chat/invite/'+ msg.username +'">'+msg.username+'</a></li>' );
+    },false);
+    source_uniq.addEventListener('invite', function(event) {
+        var data = JSON.parse(event.data);
+        // alert("log : " + event);
+        if(prompt("invitation to chat session, are you ok?")){
+            window.location = window.location + data.url;
+        }
+    }, false);
+
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script>
+    var form = $( 'form' ).on( 'submit', function( e ) {
+        e.preventDefault()
+        let user_name = $( 'input.username' ).val()
+        // socket.emit( 'new_message', {
+        // username: "{{session.username}}",
+        // message : user_input
+        // } )
+        var xhr2 = new XMLHttpRequest();
+        xhr2.open('GET','/contact/'+user_name); 
+        xhr2.send()
+        // empty the input field
+        $( 'input.message' ).val( '' ).focus()
+    } )
+    </script>
+</body>
+</html>
