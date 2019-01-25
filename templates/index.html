@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1>Getting server updates</h1>
+<div id="result"></div>
+
+<script>
+<!-- SERVER-SEND EVENT -->
+if(typeof(EventSource) !== "undefined") {
+  var source = new EventSource("/stream");
+  source.onmessage = function(event) {
+    document.getElementById("result").innerHTML += event.data + "<br>";
+  };
+} else {
+  document.getElementById("result").innerHTML = "Sorry, your browser does not support server-sent events...";
+}
+</script>
+
+<script> 
+<!-- PEER 2 PEER SDP channel -->
+// myPeerConnection.createOffer().then(function(offer) {
+//   return myPeerConnection.setLocalDescription(offer);
+// })
+// .then(function() {
+//   sendToServer({
+//     name: myUsername,
+//     target: targetUsername,
+//     type: "video-offer",
+//     sdp: myPeerConnection.localDescription
+//   });
+// })
+// .then(function() {
+//   console.log("sdp created");
+//   console.log(myPeerConnection.localDescription.toString());
+// })
+// .catch(function(reason) {
+//   // An error occurred, so handle the failure to connect
+// });
+</script>
+
+<script>
+  var xhr = new XMLHttpRequest(); 
+  xhr.open('POST','/upload'); 
+  xhr.onload = function() { console.log("xhr sent"); }; 
+xhr.send("text string");
+</script>
+
+</body>
+</html>
