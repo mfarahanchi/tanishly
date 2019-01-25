@@ -3,7 +3,9 @@ from flask_login import LoginManager, UserMixin, current_user, login_required, l
 from flask_socketio import SocketIO, join_room, leave_room, send, emit
 from flask_sse import sse
 import random
+import logging
 
+mt_logger = logging.getLogger()
 
 
 app = Flask(__name__)
@@ -20,7 +22,7 @@ app.config.update(
 # login_manager = LoginManager()
 # login_manager.init_app(app)
 # login_manager.login_view = "login"
-
+# mt_logger.info(session.keys())
 class User(UserMixin):
 
     def __init__(self, id,name, password):
@@ -31,13 +33,22 @@ class User(UserMixin):
 
 user_names = []
 
+
+contacts = dict()
+contacts['m_farahanchi'] = ['felani']
+contacts['felani'] = ['m_farahanchi']
+
+
 @app.route('/')
 def index():
-    if session['username'] in contacts.keys():
-        my_contacts = contacts[session['username']]
-    else:
-        contacts[session['username']] = []
-        my_contacts = []
+    mt_logger.info(session.keys())
+    if 'username' in session.keys():
+        if session['username'] in contacts.keys():
+            my_contacts = contacts[session['username']]
+        else:
+            contacts[session['username']] = []
+            my_contacts = []
+    my_contacts = []
     return render_template("index.html", contacts=my_contacts)
 
 @app.route('/login' , methods = ['POST','GET'])
@@ -73,10 +84,6 @@ def contact(requested):
             sse.publish({"message" : "no such user singed! : {}".format(name)}, type='new_contact')
     return render_template("contact.html")
 
-
-contacts = dict()
-contacts['m_farahanchi'] = ['felani']
-contacts['felani'] = ['m_farahanchi']
 
 @app.route('/contact/approve/<username>')
 def approve_contact(username):

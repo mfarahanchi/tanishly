@@ -42,7 +42,7 @@
         document.getElementById("result").innerHTML += data.    message + "<br>";
     }, false);
     source.addEventListener('error', function(event) {
-        // var data = JSON.parse(event.data);
+        var data = JSON.parse(event.data);
         // alert("log : " + event);
         document.getElementById("result").innerHTML += data.message + "<br>";
     }, false);
